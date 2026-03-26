@@ -1,0 +1,26 @@
+name: Sign IPA
+on: [push, workflow_dispatch]
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install zsign
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssl libssl-dev
+          git clone https://github.com/zhly0/zsign.git
+          cd zsign && g++ *.cpp -lcrypto -O3 -o zsign
+          sudo cp zsign /usr/local/bin/
+
+      - name: Sign my IPA
+        run: |
+          zsign -k cert.p12 -p შენი_პაროლი -m mobile.mobileprovision -o signed_app.ipa app.ipa
+
+      - name: Upload Signed IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Signed-App
+          path: signed_app.ipa
